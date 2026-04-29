@@ -8,15 +8,20 @@ export default async function NewEntryPage({
   const { batchId } = await searchParams
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg mx-auto md:max-w-4xl pt-2">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">New Entry</h1>
-        <p className="text-muted-foreground">Record observations and progress for a batch.</p>
-      </div>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <header className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          Capture
+        </p>
+        <h1 className="font-serif text-3xl font-medium tracking-tight md:text-4xl">
+          New entry
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Record observations, survival counts and photo evidence for an active batch.
+        </p>
+      </header>
 
-      <div className="mt-4">
-        <EntryWizard initialBatchId={batchId} />
-      </div>
+      <EntryWizard initialBatchId={batchId} />
     </div>
   )
 }

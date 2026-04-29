@@ -61,8 +61,8 @@ export async function runSeed(supabase: DemoClient) {
 
   // 1. Create Demo Users
   const usersToCreate = [
-    { email: 'admin@growlab.demo', password: 'grow', role: 'admin', name: 'Admin User' },
-    { email: 'scientist@growlab.demo', password: 'grow', role: 'scientist', name: 'Scientist User' }
+    { email: 'admin@growlab.demo', password: 'growlab', role: 'admin', name: 'Admin User' },
+    { email: 'scientist@growlab.demo', password: 'growlab', role: 'scientist', name: 'Scientist User' }
   ];
 
   const userIds: Record<string, string> = {};
@@ -88,6 +88,13 @@ export async function runSeed(supabase: DemoClient) {
 
     if (user) {
       userIds[u.role] = user.id;
+      // Always sync the demo password — covers users created with an older password.
+      if (alreadyExists) {
+        const { error: updErr } = await supabase.auth.admin.updateUserById(user.id, {
+          password: u.password,
+        });
+        if (updErr) console.error(`Could not update password for ${u.email}:`, updErr);
+      }
       await supabase.from('user_profiles').upsert({
         id: user.id,
         org_id,

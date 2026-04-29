@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Serif, Source_Code_Pro } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,8 +37,9 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${notoSerif.variable} ${sourceCodePro.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );
