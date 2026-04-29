@@ -16,7 +16,7 @@ export default async function UsersPage() {
 
   // Fetch users
   const { data: users } = await supabase
-    .from('demo.user_profiles')
+    .from('user_profiles')
     .select('*')
     .order('created_at', { ascending: false })
 

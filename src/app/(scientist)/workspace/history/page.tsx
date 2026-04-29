@@ -10,17 +10,17 @@ export default async function ScientistHistoryPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: entries } = await supabase
-    .from('demo.stage_entries')
+    .from('stage_entries')
     .select(`
       id,
       status,
       created_at,
       jar_count,
       survival_count,
-      demo_batches:batch_id ( batch_code, demo_varieties:variety_id(name) ),
-      demo_stages:stage_id ( name )
+      batch:batches!batch_id ( batch_code, variety:varieties!variety_id(name) ),
+      stage:stages!stage_id ( name )
     `)
-    .eq('operator_id', user?.id)
+    .eq('operator_id', user?.id ?? '')
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -46,8 +46,8 @@ export default async function ScientistHistoryPage() {
                   )}
                 </div>
                 <div>
-                  <div className="font-bold text-lg">{entry.demo_batches?.batch_code}</div>
-                  <div className="text-sm font-medium">{entry.demo_batches?.demo_varieties?.name} • {entry.demo_stages?.name}</div>
+                  <div className="font-bold text-lg">{entry.batch?.batch_code}</div>
+                  <div className="text-sm font-medium">{entry.batch?.variety?.name} • {entry.stage?.name}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {format(new Date(entry.created_at), 'MMM d, yyyy • h:mm a')}
                   </div>

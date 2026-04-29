@@ -18,7 +18,7 @@ export default async function BatchesPage() {
 
   // Fetch batches with their variety and stage details
   const { data: batches } = await supabase
-    .from('demo.batches')
+    .from('batches')
     .select(`
       id,
       batch_code,
@@ -27,8 +27,8 @@ export default async function BatchesPage() {
       current_jar_count,
       started_at,
       expected_completion_at,
-      demo_varieties:variety_id ( name ),
-      demo_stages:current_stage_id ( name, stage_group )
+      variety:varieties!variety_id ( name ),
+      stage:stages!current_stage_id ( name, stage_group )
     `)
     .order('started_at', { ascending: false })
 
@@ -65,11 +65,11 @@ export default async function BatchesPage() {
                     {batch.batch_code}
                   </Link>
                 </TableCell>
-                <TableCell>{batch.demo_varieties?.name}</TableCell>
+                <TableCell>{batch.variety?.name}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span>{batch.demo_stages?.name}</span>
-                    <span className="text-xs text-muted-foreground">{batch.demo_stages?.stage_group}</span>
+                    <span>{batch.stage?.name}</span>
+                    <span className="text-xs text-muted-foreground">{batch.stage?.stage_group}</span>
                   </div>
                 </TableCell>
                 <TableCell>{batch.current_jar_count} / {batch.initial_jar_count}</TableCell>

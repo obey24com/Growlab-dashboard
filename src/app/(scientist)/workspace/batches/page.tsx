@@ -7,16 +7,16 @@ import Link from "next/link"
 export default async function ScientistBatchesPage() {
   const supabase = await createClient()
 
-  // For the demo, just show all active batches 
+  // For the demo, just show all active batches
   const { data: batches } = await supabase
-    .from('demo.batches')
+    .from('batches')
     .select(`
       id,
       batch_code,
       status,
       started_at,
-      demo_varieties:variety_id ( name ),
-      demo_stages:current_stage_id ( name, expected_duration_days )
+      variety:varieties!variety_id ( name ),
+      stage:stages!current_stage_id ( name, expected_duration_days )
     `)
     .eq('status', 'active')
     .order('started_at', { ascending: false })
@@ -41,15 +41,15 @@ export default async function ScientistBatchesPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-bold text-lg">{batch.batch_code}</div>
-                      <div className="text-muted-foreground text-sm">{batch.demo_varieties?.name}</div>
+                      <div className="text-muted-foreground text-sm">{batch.variety?.name}</div>
                     </div>
                     <Badge className="bg-primary hover:bg-primary">{batch.status}</Badge>
                   </div>
-                  
+
                   <div className="bg-muted/30 p-3 rounded-md grid grid-cols-2 gap-2 mt-auto">
                     <div>
                       <div className="text-xs text-muted-foreground">Current Stage</div>
-                      <div className="font-medium text-sm">{batch.demo_stages?.name}</div>
+                      <div className="font-medium text-sm">{batch.stage?.name}</div>
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground">Days in System</div>

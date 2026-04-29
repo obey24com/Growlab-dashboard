@@ -5,18 +5,20 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { CheckCircle2, Circle, Clock } from "lucide-react"
 
-export default async function BatchDetailPage({ params }: { params: { id: string } }) {
+export default async function BatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+
+  const { id } = await params
 
   // Fetch batch details
   const { data: batch } = await supabase
-    .from('demo.batches')
+    .from('batches')
     .select(`
       *,
-      demo_varieties:variety_id ( name, code ),
-      demo_stages:current_stage_id ( name, code )
+      variety:varieties!variety_id ( name, code ),
+      stage:stages!current_stage_id ( name, code )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!batch) {
@@ -25,13 +27,13 @@ export default async function BatchDetailPage({ params }: { params: { id: string
 
   // Fetch stage entries
   const { data: entries } = await supabase
-    .from('demo.stage_entries')
+    .from('stage_entries')
     .select(`
       *,
-      demo_stages:stage_id ( name, code, sequence_order, expected_duration_days )
+      stage:stages!stage_id ( name, code, sequence_order, expected_duration_days )
     `)
     .eq('batch_id', batch.id)
-    .order('demo_stages(sequence_order)' as any, { ascending: true })
+    .order('stage(sequence_order)' as never, { ascending: true })
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto">
@@ -44,7 +46,7 @@ export default async function BatchDetailPage({ params }: { params: { id: string
             </Badge>
           </div>
           <p className="text-muted-foreground flex items-center gap-2">
-            <span>{batch.demo_varieties?.name} ({batch.demo_varieties?.code})</span>
+            <span>{batch.variety?.name} ({batch.variety?.code})</span>
             <span>•</span>
             <span>Started {format(new Date(batch.started_at), 'MMM d, yyyy')}</span>
           </p>
@@ -57,7 +59,7 @@ export default async function BatchDetailPage({ params }: { params: { id: string
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{batch.demo_stages?.name}</div>
+            <div className="text-2xl font-bold">{batch.stage?.name}</div>
           </CardContent>
         </Card>
         <Card>
@@ -108,8 +110,8 @@ export default async function BatchDetailPage({ params }: { params: { id: string
                 </div>
                 <div className="flex-1 pb-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-lg">{entry.demo_stages?.name}</h3>
-                    <Badge variant="outline">{entry.demo_stages?.code}</Badge>
+                    <h3 className="font-semibold text-lg">{entry.stage?.name}</h3>
+                    <Badge variant="outline">{entry.stage?.code}</Badge>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1 mb-3">
                     {format(new Date(entry.started_at), 'MMM d, yyyy')} 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -10,13 +11,23 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { createClient } from '@/lib/supabase/client'
 import { AlertCircle } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const [password, setPassword] = useState('')
   const [persona, setPersona] = useState('admin')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const reason = searchParams.get('error')
+    if (reason === 'profile_lookup_failed') {
+      setError(
+        'We could not load your profile. The demo schema may not be exposed yet — see README §Setup.'
+      )
+    }
+  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,13 +37,13 @@ export default function LoginPage() {
     const email = persona === 'admin' ? 'admin@growlab.demo' : 'scientist@growlab.demo'
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) {
-        setError(error.message)
+      if (authError) {
+        setError(authError.message)
         setIsLoading(false)
         return
       }
@@ -41,8 +52,9 @@ export default function LoginPage() {
         router.push(persona === 'admin' ? '/admin' : '/workspace')
         router.refresh()
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(message)
       setIsLoading(false)
     }
   }
@@ -51,10 +63,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center text-center">
-          <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
-            <span className="text-primary-foreground font-bold text-3xl">G</span>
+          <div className="mb-6">
+            <Image
+              src="/logo transparent.png"
+              alt="Growlab"
+              width={240}
+              height={90}
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Growlab</h1>
           <p className="text-muted-foreground mt-2">Phase 1 Demo Access</p>
         </div>
 
@@ -74,15 +91,15 @@ export default function LoginPage() {
                   </TabsList>
                 </Tabs>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Demo Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter 'grow'" 
+                  placeholder="Enter 'grow'"
                   required
                 />
               </div>
@@ -90,7 +107,11 @@ export default function LoginPage() {
               {error && (
                 <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-start gap-2">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>{error === 'Invalid login credentials' ? 'Incorrect password. Try "grow".' : error}</span>
+                  <span>
+                    {error === 'Invalid login credentials'
+                      ? 'Incorrect password. Try "grow".'
+                      : error}
+                  </span>
                 </div>
               )}
             </CardContent>
@@ -103,5 +124,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
   )
 }

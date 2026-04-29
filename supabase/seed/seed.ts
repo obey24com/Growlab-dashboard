@@ -1,4 +1,9 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+// The seed runs against a service-role client configured with
+// `db: { schema: 'demo' }`. We type the parameter loosely so the
+// caller can pass any schema-typed client.
+type DemoClient = SupabaseClient<any, any, any>;
 
 const STAGES = [
   { code: 'G1', name: 'Germination 1', stage_group: 'Germination', sequence_order: 1, expected_duration_days: 56, expected_yield_low: 0.40, expected_yield_high: 0.45, jar_type: 'Bi', jar_ratio: 1 },
@@ -48,7 +53,7 @@ const BATCHES = [
   { code: 'B-2026-014', months_ago: 1,  current_stage: 'G1', initial_jars: 150 },
 ];
 
-export async function runSeed(supabase: SupabaseClient) {
+export async function runSeed(supabase: DemoClient) {
   const startTime = Date.now();
   const org_id = '00000000-0000-0000-0000-000000000001'; // Default org
 
@@ -68,18 +73,22 @@ export async function runSeed(supabase: SupabaseClient) {
       password: u.password,
       email_confirm: true,
     });
-    
-    if (authErr && !authErr.message.includes('already exists')) {
+
+    const alreadyExists =
+      authErr &&
+      ((authErr as { code?: string }).code === 'email_exists' ||
+        /already (exists|been registered)/i.test(authErr.message));
+    if (authErr && !alreadyExists) {
       console.error(`Error creating ${u.email}:`, authErr);
     }
 
-    // Try to get user if it already existed
+    // Resolve the user — newly created or existing.
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
     const user = existingUsers?.users.find(user => user.email === u.email) || authData?.user;
 
     if (user) {
       userIds[u.role] = user.id;
-      await supabase.from('demo.user_profiles').upsert({
+      await supabase.from('user_profiles').upsert({
         id: user.id,
         org_id,
         email: u.email,
@@ -93,22 +102,42 @@ export async function runSeed(supabase: SupabaseClient) {
   }
 
   // 2. Create Variety
-  const { data: variety } = await supabase.from('demo.varieties').upsert({
-    org_id,
-    code: 'MP-01',
-    name: 'Multipuno Makapuno',
-    scientific_name: 'Cocos nucifera L.',
-  }).select().single();
+  const { data: variety, error: varietyErr } = await supabase
+    .from('varieties')
+    .upsert(
+      {
+        org_id,
+        code: 'MP-01',
+        name: 'Multipuno Makapuno',
+        scientific_name: 'Cocos nucifera L.',
+      },
+      { onConflict: 'code' }
+    )
+    .select()
+    .single();
+  if (varietyErr) throw new Error(`varieties upsert failed: ${varietyErr.message} (${varietyErr.code})`);
 
   // 3. Create Stages
   const stageRecords = STAGES.map(s => ({ org_id, ...s }));
-  const { data: insertedStages } = await supabase.from('demo.stages').upsert(stageRecords, { onConflict: 'org_id, code' }).select();
-  const stageMap = insertedStages!.reduce((acc, s) => ({ ...acc, [s.code]: s.id }), {} as Record<string, string>);
+  const { data: insertedStages, error: stagesErr } = await supabase
+    .from('stages')
+    .upsert(stageRecords, { onConflict: 'org_id, code' })
+    .select();
+  if (stagesErr || !insertedStages) {
+    throw new Error(`stages upsert failed: ${stagesErr?.message ?? 'no data returned'}`);
+  }
+  const stageMap = insertedStages.reduce((acc, s) => ({ ...acc, [s.code]: s.id }), {} as Record<string, string>);
 
   // 4. Create Observation Types
   const obsRecords = OBSERVATION_TYPES.map(o => ({ org_id, ...o }));
-  const { data: insertedObsTypes } = await supabase.from('demo.observation_types').upsert(obsRecords, { onConflict: 'org_id, code' }).select();
-  const obsTypeMap = insertedObsTypes!.reduce((acc, o) => ({ ...acc, [o.code]: o.id }), {} as Record<string, string>);
+  const { data: insertedObsTypes, error: obsTypeErr } = await supabase
+    .from('observation_types')
+    .upsert(obsRecords, { onConflict: 'org_id, code' })
+    .select();
+  if (obsTypeErr || !insertedObsTypes) {
+    throw new Error(`observation_types upsert failed: ${obsTypeErr?.message ?? 'no data returned'}`);
+  }
+  const obsTypeMap = insertedObsTypes.reduce((acc, o) => ({ ...acc, [o.code]: o.id }), {} as Record<string, string>);
 
   // 5. Create Batches and Stage Entries
   let totalRowsSeeded = 0;
@@ -117,52 +146,59 @@ export async function runSeed(supabase: SupabaseClient) {
     const startedAt = new Date();
     startedAt.setMonth(startedAt.getMonth() - b.months_ago);
 
-    const { data: batch } = await supabase.from('demo.batches').upsert({
+    const { data: batch } = await supabase.from('batches').upsert({
       org_id,
       batch_code: b.code,
       variety_id: variety!.id,
       current_stage_id: stageMap[b.current_stage],
       status: 'active',
       initial_jar_count: b.initial_jars,
-      current_jar_count: b.initial_jars, // Simplified for seed
+      current_jar_count: b.initial_jars, // updated below to reflect decay
       started_at: startedAt.toISOString(),
       created_by: userIds['admin']
     }, { onConflict: 'org_id, batch_code' }).select().single();
 
     totalRowsSeeded++;
 
-    // Generate stage entries up to current stage
+    // Generate stage entries up to current stage with realistic yield decay.
     const currentStageIndex = STAGES.findIndex(s => s.code === b.current_stage);
     let entryDate = new Date(startedAt);
+    let jarCount = b.initial_jars;
 
     for (let i = 0; i <= currentStageIndex; i++) {
       const stage = STAGES[i];
       const isCurrent = i === currentStageIndex;
-      
-      const { data: stageEntry } = await supabase.from('demo.stage_entries').insert({
+      const lo = stage.expected_yield_low;
+      const hi = stage.expected_yield_high;
+      const yieldRatio = lo + Math.random() * (hi - lo);
+      const survival = isCurrent ? null : Math.max(1, Math.round(jarCount * yieldRatio));
+
+      const { data: stageEntry } = await supabase.from('stage_entries').insert({
         org_id,
         batch_id: batch!.id,
         stage_id: stageMap[stage.code],
         entry_mode: 'aggregate',
         status: isCurrent ? 'in_progress' : 'completed',
-        jar_count: b.initial_jars,
-        survival_count: isCurrent ? null : Math.floor(b.initial_jars * 0.95), // Fake 95% survival
+        jar_count: jarCount,
+        survival_count: survival,
         started_at: entryDate.toISOString(),
-        completed_at: isCurrent ? null : new Date(entryDate.getTime() + stage.expected_duration_days * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: isCurrent
+          ? null
+          : new Date(entryDate.getTime() + stage.expected_duration_days * 86400000).toISOString(),
         operator_id: userIds['scientist'],
       }).select().single();
 
       totalRowsSeeded++;
 
-      // Create a few observations per stage entry
-      if (!isCurrent) {
-        await supabase.from('demo.observations').insert([
+      if (!isCurrent && survival !== null) {
+        const isAnomaly = Math.random() < 0.08; // ~8% of completed stages flag an anomaly
+        const observationsToInsert: Record<string, unknown>[] = [
           {
             org_id,
             stage_entry_id: stageEntry!.id,
             observation_type_id: obsTypeMap['survival_count'],
             category: 'count',
-            data: { count: Math.floor(b.initial_jars * 0.95), total: b.initial_jars },
+            data: { count: survival, total: jarCount },
             created_by: userIds['scientist'],
           },
           {
@@ -170,19 +206,42 @@ export async function runSeed(supabase: SupabaseClient) {
             stage_entry_id: stageEntry!.id,
             observation_type_id: obsTypeMap['growth_quality'],
             category: 'qc_check',
-            data: { rating: 'good' },
+            data: { rating: yieldRatio >= (lo + (hi - lo) * 0.6) ? 'good' : 'fair' },
             created_by: userIds['scientist'],
-          }
-        ]);
-        totalRowsSeeded += 2;
+          },
+        ];
+        if (isAnomaly) {
+          observationsToInsert.push({
+            org_id,
+            stage_entry_id: stageEntry!.id,
+            observation_type_id: obsTypeMap['anomaly'],
+            category: 'anomaly',
+            severity: 'warning',
+            data: {
+              type: 'contamination_suspected',
+              description: 'Cloudy media noted on subset of jars during inspection.',
+            },
+            resolved: false,
+            created_by: userIds['scientist'],
+          });
+        }
+        await supabase.from('observations').insert(observationsToInsert);
+        totalRowsSeeded += observationsToInsert.length;
       }
 
-      entryDate = new Date(entryDate.getTime() + stage.expected_duration_days * 24 * 60 * 60 * 1000);
+      entryDate = new Date(entryDate.getTime() + stage.expected_duration_days * 86400000);
+      if (survival !== null) jarCount = survival;
     }
+
+    // Sync the batch's current_jar_count to the in-progress stage's input.
+    await supabase
+      .from('batches')
+      .update({ current_jar_count: jarCount })
+      .eq('id', batch!.id);
   }
 
   // 6. Forecast Stub
-  await supabase.from('demo.forecasts').insert({
+  await supabase.from('forecasts').insert({
     org_id,
     horizon: '90_day',
     variety_id: variety!.id,

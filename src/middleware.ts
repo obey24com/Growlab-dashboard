@@ -10,12 +10,13 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      db: { schema: 'demo' },
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -38,11 +39,19 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    const { data: profile } = await supabase
-      .from('demo.user_profiles')
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
       .select('role')
       .eq('id', user.id)
       .single()
+
+    // If the profile lookup explicitly fails, surface a friendly error rather
+    // than silently bouncing the user, which used to mask schema/grant issues.
+    if (profileError) {
+      const url = new URL('/', request.url)
+      url.searchParams.set('error', 'profile_lookup_failed')
+      return NextResponse.redirect(url)
+    }
 
     if (path.startsWith('/admin') && profile?.role !== 'admin') {
       return NextResponse.redirect(new URL('/workspace', request.url))
@@ -53,5 +62,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/workspace/:path*']
+  matcher: ['/admin/:path*', '/workspace/:path*'],
 }

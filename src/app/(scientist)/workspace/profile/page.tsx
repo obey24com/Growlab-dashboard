@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Globe } from "lucide-react"
+import { LanguageToggle } from "@/components/scientist/language-toggle"
 
 export default async function ScientistProfilePage() {
   const supabase = await createClient()
@@ -10,9 +9,9 @@ export default async function ScientistProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = await supabase
-    .from('demo.user_profiles')
+    .from('user_profiles')
     .select('*')
-    .eq('id', user?.id)
+    .eq('id', user?.id ?? '')
     .single()
 
   return (
@@ -50,16 +49,7 @@ export default async function ScientistProfilePage() {
             <CardDescription>Customize your workspace.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="space-y-0.5">
-                <Label className="text-base">Language</Label>
-                <div className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Globe className="h-3 w-3" />
-                  Currently English
-                </div>
-              </div>
-              <Button variant="outline" size="sm">Switch to Tiếng Việt</Button>
-            </div>
+            <LanguageToggle />
           </CardContent>
         </Card>
       </div>

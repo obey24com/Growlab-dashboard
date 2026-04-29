@@ -1,6 +1,12 @@
 import { EntryWizard } from "@/components/entry/entry-wizard"
 
-export default function NewEntryPage({ searchParams }: { searchParams: { batchId?: string } }) {
+export default async function NewEntryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ batchId?: string }>
+}) {
+  const { batchId } = await searchParams
+
   return (
     <div className="flex flex-col gap-6 max-w-lg mx-auto md:max-w-4xl pt-2">
       <div>
@@ -9,7 +15,7 @@ export default function NewEntryPage({ searchParams }: { searchParams: { batchId
       </div>
 
       <div className="mt-4">
-        <EntryWizard initialBatchId={searchParams.batchId} />
+        <EntryWizard initialBatchId={batchId} />
       </div>
     </div>
   )

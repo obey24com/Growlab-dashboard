@@ -13,34 +13,34 @@ export default async function ScientistTodayPage() {
   
   // Fetch profile
   const { data: profile } = await supabase
-    .from('demo.user_profiles')
+    .from('user_profiles')
     .select('display_name')
-    .eq('id', user?.id)
+    .eq('id', user?.id ?? '')
     .single()
 
   // Fetch some "tasks" (batches currently in progress that might need attention)
   const { data: batches } = await supabase
-    .from('demo.batches')
+    .from('batches')
     .select(`
       id,
       batch_code,
-      demo_varieties:variety_id ( name ),
-      demo_stages:current_stage_id ( name )
+      variety:varieties!variety_id ( name ),
+      stage:stages!current_stage_id ( name )
     `)
     .eq('status', 'active')
     .limit(3)
 
   // Fetch recent history
   const { data: recentEntries } = await supabase
-    .from('demo.stage_entries')
+    .from('stage_entries')
     .select(`
       id,
       status,
       created_at,
-      demo_batches:batch_id ( batch_code ),
-      demo_stages:stage_id ( name )
+      batch:batches!batch_id ( batch_code ),
+      stage:stages!stage_id ( name )
     `)
-    .eq('operator_id', user?.id)
+    .eq('operator_id', user?.id ?? '')
     .order('created_at', { ascending: false })
     .limit(3)
 
@@ -70,9 +70,9 @@ export default async function ScientistTodayPage() {
                 <div>
                   <div className="font-semibold text-lg">{batch.batch_code}</div>
                   <div className="text-sm text-muted-foreground flex gap-1">
-                    <span>{batch.demo_varieties?.name}</span>
+                    <span>{batch.variety?.name}</span>
                     <span>•</span>
-                    <span>{batch.demo_stages?.name}</span>
+                    <span>{batch.stage?.name}</span>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" asChild>
@@ -106,7 +106,7 @@ export default async function ScientistTodayPage() {
                     )}
                     <div>
                       <div className="font-medium">
-                        {entry.demo_batches?.batch_code} - {entry.demo_stages?.name}
+                        {entry.batch?.batch_code} - {entry.stage?.name}
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
                         {format(new Date(entry.created_at), 'MMM d, h:mm a')} • {entry.status.replace('_', ' ')}

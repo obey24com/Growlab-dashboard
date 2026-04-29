@@ -1,6 +1,7 @@
 'use client'
 
 import { Bell, LogOut, Settings } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,7 +27,13 @@ export function ScientistTopbar() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
       <div className="flex flex-1 items-center gap-4">
-        <span className="text-xl font-bold text-primary">Growlab</span>
+        <Image
+          src="/logo transparent.png"
+          alt="Growlab"
+          width={120}
+          height={45}
+          priority
+        />
       </div>
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="rounded-full">

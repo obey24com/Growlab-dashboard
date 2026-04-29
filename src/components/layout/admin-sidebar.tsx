@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Home, Layers, GitMerge, Users, Activity, HeartPulse, ShoppingCart, Package, Users2, FileText, PieChart, ShieldCheck, Search, Anchor } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -49,8 +50,14 @@ export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex h-12 items-center px-4 font-bold text-primary">
-          <span className="text-xl">Growlab</span>
+        <div className="flex h-16 items-center px-3">
+          <Image
+            src="/logo transparent.png"
+            alt="Growlab"
+            width={160}
+            height={60}
+            priority
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>

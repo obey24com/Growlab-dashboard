@@ -24,10 +24,6 @@ export const metadata: Metadata = {
     template: "%s · Growlab",
   },
   description: "AI-native operations for tissue culture production",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
 };
 
 export default function RootLayout({
