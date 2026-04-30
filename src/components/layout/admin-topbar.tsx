@@ -74,25 +74,25 @@ export function AdminTopbar() {
     <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/60 bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-8">
       <Breadcrumbs />
 
-      <form
-        className="ml-auto flex flex-1 max-w-md items-center md:ml-6"
-        onSubmit={(e) => e.preventDefault()}
-      >
-        <div className="relative w-full">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            ref={searchRef}
-            type="search"
-            placeholder="Search batches, varieties, users…"
-            className="h-9 w-full rounded-lg border-border/60 bg-muted/40 pl-8 pr-14 text-[13px] shadow-none transition-colors focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
-          />
-          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground md:inline-flex">
-            <span className="text-[11px]">⌘</span>K
-          </kbd>
-        </div>
-      </form>
+      <div className="ml-auto flex items-center gap-2">
+        <form
+          className="hidden md:block"
+          onSubmit={(e) => e.preventDefault()}
+        >
+          <div className="relative w-64">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              type="search"
+              placeholder="Search…"
+              className="h-9 w-full rounded-lg border-border/60 bg-muted/40 pl-8 pr-12 text-[13px] shadow-none transition-colors focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
+            />
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground md:inline-flex">
+              <span className="text-[11px]">⌘</span>K
+            </kbd>
+          </div>
+        </form>
 
-      <div className="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"

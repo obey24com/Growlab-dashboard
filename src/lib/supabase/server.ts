@@ -1,12 +1,22 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+function readEnv(name: string): string {
+  const v = process.env[name]
+  if (!v || v.length === 0) {
+    throw new Error(
+      `Missing environment variable ${name}. Set it in your Vercel project (Settings → Environment Variables) for Production, Preview, and Development.`
+    )
+  }
+  return v
+}
+
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    readEnv('NEXT_PUBLIC_SUPABASE_URL'),
+    readEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     {
       db: { schema: 'demo' },
       cookies: {

@@ -4,6 +4,9 @@ import { ScientistTopbar } from "@/components/layout/scientist-topbar"
 import { AdminPageTransition } from "@/components/layout/admin-page-transition"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
+// Auth-gated app shell — never prerender at build time.
+export const dynamic = "force-dynamic"
+
 export default function WorkspaceLayout({
   children,
 }: {
