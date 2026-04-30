@@ -61,8 +61,20 @@ export async function runSeed(supabase: DemoClient) {
 
   // 1. Create Demo Users
   const usersToCreate = [
-    { email: 'admin@growlab.demo', password: 'growlab', role: 'admin', name: 'Admin User' },
-    { email: 'scientist@growlab.demo', password: 'growlab', role: 'scientist', name: 'Scientist User' }
+    {
+      email: 'admin@growlab.demo',
+      password: 'growlab',
+      role: 'admin',
+      name: 'Prof. Dr. Nguyen Phuong Thao',
+      displayName: 'Prof. Thao',
+    },
+    {
+      email: 'scientist@growlab.demo',
+      password: 'growlab',
+      role: 'scientist',
+      name: 'Thu Hien',
+      displayName: 'Thu Hien',
+    },
   ];
 
   const userIds: Record<string, string> = {};
@@ -95,12 +107,13 @@ export async function runSeed(supabase: DemoClient) {
         });
         if (updErr) console.error(`Could not update password for ${u.email}:`, updErr);
       }
+      // Upsert always overwrites the name/display_name so a Reset Demo refreshes them.
       await supabase.from('user_profiles').upsert({
         id: user.id,
         org_id,
         email: u.email,
         full_name: u.name,
-        display_name: u.name.split(' ')[0],
+        display_name: u.displayName,
         role: u.role,
         is_active: true,
         is_demo: true,

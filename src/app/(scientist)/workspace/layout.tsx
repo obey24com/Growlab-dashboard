@@ -14,7 +14,7 @@ export default function WorkspaceLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-muted/30 pb-16 md:pb-0">
+      <div className="flex min-h-screen w-full bg-muted/30 pb-24 md:pb-0">
         <ScientistSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <ScientistTopbar />

@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   AlertCircle,
   Layers,
-  Sparkles,
+  ListChecks,
+  Boxes,
   Camera,
   ClipboardCheck,
   Loader2,
@@ -22,6 +23,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useEntryWizardStore } from '@/lib/entry-wizard-store'
 
 type BatchOption = {
   id: string
@@ -36,7 +38,7 @@ type BatchOption = {
 
 const STEPS = [
   { id: 1, key: 'batch', label: 'Batch', icon: Layers },
-  { id: 2, key: 'mode', label: 'Method', icon: Sparkles },
+  { id: 2, key: 'mode', label: 'Method', icon: ListChecks },
   { id: 3, key: 'photos', label: 'Photos', icon: Camera },
   { id: 4, key: 'review', label: 'Review', icon: ClipboardCheck },
 ] as const
@@ -131,6 +133,27 @@ export function EntryWizard({ initialBatchId }: { initialBatchId?: string }) {
 
   const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps))
   const prevStep = () => setStep((s) => Math.max(s - 1, 1))
+
+  // Bridge wizard state to the mobile bottom-nav so its FAB drives the flow.
+  const registerWizard = useEntryWizardStore((s) => s.register)
+  const resetWizard = useEntryWizardStore((s) => s.reset)
+  React.useEffect(() => {
+    if (step === 5) {
+      // Success state — let the FAB go back to leaf-idle.
+      resetWizard()
+      return
+    }
+    const canAdvance =
+      (step === 1 && !!batchId) ||
+      (step === 2 && mode !== 'per_jar' && !!survivalCount) ||
+      step === 3 ||
+      (step === 4 && !isSubmitting)
+    const advance = step === 4 ? handleSubmit : nextStep
+    registerWizard({ step, canAdvance, isSubmitting, advance, totalSteps })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, batchId, mode, survivalCount, isSubmitting])
+
+  React.useEffect(() => () => resetWizard(), [resetWizard])
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -430,7 +453,7 @@ export function EntryWizard({ initialBatchId }: { initialBatchId?: string }) {
                     id: 'per_jar',
                     title: 'Per-jar',
                     desc: 'Record status for each individual jar.',
-                    icon: Sparkles,
+                    icon: Boxes,
                   },
                 ] as const
               ).map((opt) => {
@@ -659,7 +682,7 @@ function WizardFooter({
   backDisabled?: boolean
 }) {
   return (
-    <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-4">
+    <div className="mt-2 flex items-center justify-between gap-3 border-t border-border/60 pt-4">
       {onBack ? (
         <Button variant="ghost" onClick={onBack} disabled={backDisabled}>
           <ArrowLeft className="size-3.5" />
@@ -668,7 +691,13 @@ function WizardFooter({
       ) : (
         <span />
       )}
-      <Button onClick={onNext} disabled={nextDisabled}>
+      {/* On mobile the bottom-nav FAB drives "Next/Submit", so the in-card */}
+      {/* primary button is hidden to avoid being covered by the nav bar. */}
+      <Button
+        onClick={onNext}
+        disabled={nextDisabled}
+        className="hidden md:inline-flex"
+      >
         {nextLabel}
       </Button>
     </div>

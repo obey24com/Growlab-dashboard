@@ -61,9 +61,9 @@ export function ScientistTopbar() {
               }
             >
               <Avatar className="size-8 ring-1 ring-border/70">
-                <AvatarImage src="" alt="Scientist" />
+                <AvatarImage src="" alt="Thu Hien" />
                 <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary">
-                  SC
+                  TH
                 </AvatarFallback>
               </Avatar>
               <span className="sr-only">Open user menu</span>
@@ -71,7 +71,7 @@ export function ScientistTopbar() {
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
-                  <span className="text-sm font-semibold text-foreground">Scientist User</span>
+                  <span className="text-sm font-semibold text-foreground">Thu Hien</span>
                   <span className="text-[11px] font-normal text-muted-foreground">
                     scientist@growlab.demo
                   </span>
@@ -113,9 +113,9 @@ export function ScientistTopbar() {
               }
             >
               <Avatar className="size-8 ring-1 ring-border/70">
-                <AvatarImage src="" alt="Scientist" />
+                <AvatarImage src="" alt="Thu Hien" />
                 <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary">
-                  SC
+                  TH
                 </AvatarFallback>
               </Avatar>
               <span className="sr-only">Open user menu</span>
@@ -123,7 +123,7 @@ export function ScientistTopbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
-                  <span className="text-sm font-semibold text-foreground">Scientist User</span>
+                  <span className="text-sm font-semibold text-foreground">Thu Hien</span>
                   <span className="text-[11px] font-normal text-muted-foreground">
                     scientist@growlab.demo
                   </span>

@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   TrendingUp,
   ArrowRight,
-  Sparkles,
+  Inbox,
   CalendarDays,
 } from "lucide-react"
 import { formatDistanceToNow, format } from "date-fns"
@@ -372,7 +372,7 @@ export default async function AdminDashboardPage() {
             {(recentAuditRes.data?.length ?? 0) === 0 ? (
               <div className="flex flex-col items-center gap-1.5 py-10 text-center">
                 <div className="flex size-9 items-center justify-center rounded-full bg-muted">
-                  <Sparkles className="size-4 text-muted-foreground" />
+                  <Inbox className="size-4 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-medium text-foreground">
                   Quiet so far

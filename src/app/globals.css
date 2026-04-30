@@ -140,3 +140,58 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ========== Branded transition loader ========== */
+@keyframes growlab-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(73, 154, 68, 0));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 14px rgba(73, 154, 68, 0.35));
+  }
+}
+
+@keyframes growlab-glow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes growlab-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes growlab-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes growlab-loader-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes growlab-loader-fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+::view-transition-old(growlab-shell),
+::view-transition-new(growlab-shell) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

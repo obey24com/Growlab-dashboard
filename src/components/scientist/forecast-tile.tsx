@@ -1,6 +1,6 @@
 'use client'
 
-import { Sparkles } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Sparkline } from "@/components/admin/sparkline"
 
@@ -48,7 +48,7 @@ export function ForecastTile({
             )}
           </div>
           <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
-            <Sparkles className="size-4" />
+            <TrendingUp className="size-4" />
           </div>
         </div>
         {numbers.length > 1 && (

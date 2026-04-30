@@ -1,8 +1,7 @@
 'use client'
 
 import * as React from "react"
-import { Search, Bell, Settings, RotateCcw, LogOut, User, Loader2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Bell, Settings, RotateCcw, LogOut, User, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -33,18 +32,6 @@ export function AdminTopbar() {
   const supabase = React.useMemo(() => createClient(), [])
   const [resetOpen, setResetOpen] = React.useState(false)
   const [resetting, setResetting] = React.useState(false)
-  const searchRef = React.useRef<HTMLInputElement>(null)
-
-  React.useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -74,25 +61,7 @@ export function AdminTopbar() {
     <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/60 bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-8">
       <Breadcrumbs />
 
-      <div className="ml-auto flex items-center gap-2">
-        <form
-          className="hidden md:block"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <div className="relative w-64">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              type="search"
-              placeholder="Search…"
-              className="h-9 w-full rounded-lg border-border/60 bg-muted/40 pl-8 pr-12 text-[13px] shadow-none transition-colors focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
-            />
-            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground md:inline-flex">
-              <span className="text-[11px]">⌘</span>K
-            </kbd>
-          </div>
-        </form>
-
+      <div className="ml-auto flex items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
@@ -121,17 +90,17 @@ export function AdminTopbar() {
             }
           >
             <Avatar className="size-8 ring-1 ring-border/70">
-              <AvatarImage src="" alt="Admin" />
+              <AvatarImage src="" alt="Prof. Dr. Nguyen Phuong Thao" />
               <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary">
-                AD
+                NT
               </AvatarFallback>
             </Avatar>
             <span className="sr-only">Open user menu</span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-64">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
-                <span className="text-sm font-semibold text-foreground">Admin User</span>
+                <span className="text-sm font-semibold text-foreground">Prof. Dr. Nguyen Phuong Thao</span>
                 <span className="text-[11px] font-normal text-muted-foreground">
                   admin@growlab.demo
                 </span>

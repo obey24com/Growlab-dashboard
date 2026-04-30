@@ -29,7 +29,7 @@ import {
   Search,
   Anchor,
   ChevronDown,
-  Sparkles,
+  Map,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -117,7 +117,7 @@ export function AdminSidebar() {
         <SidebarGroup className="mt-2">
           <details open className="group/roadmap" name="admin-nav-roadmap">
             <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 hover:text-foreground transition-colors">
-              <Sparkles className="size-3" />
+              <Map className="size-3" />
               <span>Roadmap</span>
               <ChevronDown className="ml-auto size-3.5 transition-transform duration-200 group-open/roadmap:rotate-180" />
             </summary>
