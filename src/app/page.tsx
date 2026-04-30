@@ -321,7 +321,7 @@ function LoginForm({
         <CardDescription className={cn(compact && 'text-[12.5px]')}>
           {compact
             ? 'Choose a persona to enter the workspace.'
-            : 'Choose Admin to see the full operational view, or Scientist for the field workspace.'}
+            : 'Choose Admin to see the full operational view, or User for the field workspace.'}
         </CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit} noValidate>
@@ -337,7 +337,7 @@ function LoginForm({
             >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="admin">Admin</TabsTrigger>
-                <TabsTrigger value="scientist">Scientist</TabsTrigger>
+                <TabsTrigger value="scientist">User</TabsTrigger>
               </TabsList>
             </Tabs>
             <p className="pt-1 text-xs text-muted-foreground">

@@ -1,6 +1,16 @@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
+export function AdminGreetingSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="h-3 w-20" />
+      <Skeleton className="h-9 w-64" />
+      <Skeleton className="h-4 w-72 max-w-full" />
+    </div>
+  )
+}
+
 export function KpiCardsSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

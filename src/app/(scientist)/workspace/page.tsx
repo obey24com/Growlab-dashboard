@@ -18,9 +18,19 @@ export const dynamic = "force-dynamic"
 export default function ScientistTodayPage() {
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-6 md:max-w-5xl">
-      <Suspense fallback={<GreetingSkeleton />}>
-        <Greeting />
-      </Suspense>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <Suspense fallback={<GreetingSkeleton />}>
+          <Greeting />
+        </Suspense>
+        <Button
+          className="hidden h-11 px-5 shadow-sm shadow-primary/20 md:inline-flex"
+          nativeButton={false}
+          render={<Link href="/workspace/entry/new" />}
+        >
+          <PlusCircle className="mr-2 size-4" />
+          New Entry
+        </Button>
+      </div>
 
       <div className="md:hidden">
         <Button
@@ -29,7 +39,7 @@ export default function ScientistTodayPage() {
           render={<Link href="/workspace/entry/new" />}
         >
           <PlusCircle className="mr-2 size-6" />
-          Quick Entry
+          New Entry
         </Button>
       </div>
 
