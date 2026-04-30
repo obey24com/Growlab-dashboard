@@ -3,6 +3,9 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,72 +24,79 @@ const FEATURES = [
   { icon: ShieldCheck, label: 'Immutable audit', sub: 'every change logged' },
 ]
 
+const loginSchema = z.object({
+  persona: z.enum(['admin', 'scientist']),
+  password: z.string().min(1, 'Password is required'),
+})
+
+type LoginValues = z.infer<typeof loginSchema>
+
 function LoginInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
-  const [password, setPassword] = useState('')
-  const [persona, setPersona] = useState<Persona>('admin')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
   const [isExiting, setIsExiting] = useState(false)
+
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onTouched',
+    defaultValues: { persona: 'admin', password: '' },
+  })
+
+  const persona = form.watch('persona')
+  const isSubmitting = form.formState.isSubmitting
 
   useEffect(() => {
     const reason = searchParams.get('error')
     if (reason === 'profile_lookup_failed') {
-      setError(
+      setAuthError(
         'We could not load your profile. The demo schema may not be exposed yet — see README §Setup.'
       )
     }
   }, [searchParams])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
-
+  const onSubmit = form.handleSubmit(async ({ persona, password }) => {
+    setAuthError('')
     const email =
       persona === 'admin' ? 'admin@growlab.demo' : 'scientist@growlab.demo'
 
-    try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-      if (authError) {
-        setError(authError.message)
-        setIsLoading(false)
-        return
-      }
-
-      if (data.session) {
-        const dest = persona === 'admin' ? '/admin' : '/workspace'
-        // Mount the branded transition overlay first, then push.
-        // The destination route's loading.tsx renders the same overlay,
-        // and the View Transitions API crossfades between them — making
-        // the whole login → dashboard handoff feel like one scene.
-        setIsExiting(true)
-        setTimeout(() => {
-          router.push(dest)
-          router.refresh()
-        }, 180)
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred'
-      setError(message)
-      setIsLoading(false)
+    if (error) {
+      setAuthError(
+        error.message === 'Invalid login credentials'
+          ? 'Incorrect password. Please try again.'
+          : error.message
+      )
+      return
     }
-  }
+
+    if (data.session) {
+      const dest = persona === 'admin' ? '/admin' : '/workspace'
+      // Mount the branded transition overlay first, then push.
+      // The destination route's loading.tsx renders the same overlay,
+      // and the View Transitions API crossfades between them — making
+      // the whole login → dashboard handoff feel like one scene.
+      setIsExiting(true)
+      setTimeout(() => {
+        router.push(dest)
+        router.refresh()
+      }, 180)
+    }
+  })
 
   const formProps = {
     persona,
-    setPersona,
-    password,
-    setPassword,
-    error,
-    isLoading,
-    handleLogin,
+    setPersona: (p: Persona) => form.setValue('persona', p),
+    register: form.register,
+    passwordError: form.formState.errors.password?.message,
+    authError,
+    isSubmitting,
+    onSubmit,
   }
 
   return (
@@ -100,7 +110,6 @@ function LoginInner() {
         {/*                       MOBILE LAYOUT                            */}
         {/* ============================================================ */}
         <div className="lg:hidden">
-          {/* Immersive hero */}
           <section className="relative isolate overflow-hidden">
             <div className="relative h-[58vh] min-h-[440px] w-full">
               <Image
@@ -111,7 +120,6 @@ function LoginInner() {
                 sizes="100vw"
                 className="object-cover"
               />
-              {/* Layered washes */}
               <div
                 aria-hidden
                 className="absolute inset-0 bg-[#0d2510]/70 mix-blend-multiply"
@@ -128,13 +136,11 @@ function LoginInner() {
                 aria-hidden
                 className="absolute -bottom-24 -left-16 size-60 rounded-full bg-emerald-300/25 blur-3xl"
               />
-              {/* Smooth fade into the form area */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background"
               />
 
-              {/* Top bar: logo + demo pill */}
               <div className="relative z-10 flex items-center gap-3 px-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
                 <Image
                   src="/logo transparent.png"
@@ -146,12 +152,11 @@ function LoginInner() {
                   className="h-8 w-auto invert brightness-0 contrast-200 mix-blend-screen"
                   style={{ width: 'auto', height: '2rem' }}
                 />
-                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">  
-                Phase 1 · Live demo
+                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
+                  Phase 1 · Live demo
                 </span>
               </div>
 
-              {/* Headline */}
               <div className="absolute inset-x-0 bottom-32 z-10 px-5 text-white animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <h1 className="font-serif text-[34px] leading-[1.05] tracking-tight">
                   AI-native operations for{' '}
@@ -167,7 +172,6 @@ function LoginInner() {
               </div>
             </div>
 
-            {/* Form card lifts up over the hero */}
             <div className="relative z-20 -mt-16 px-4 pb-6">
               <Card className="rounded-2xl border-border/60 shadow-2xl shadow-primary/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <LoginForm {...formProps} compact />
@@ -175,7 +179,6 @@ function LoginInner() {
             </div>
           </section>
 
-          {/* Feature pills */}
           <section className="px-4 pb-10 pt-2">
             <p className="mb-3 text-center text-[10.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Built for the lab floor
@@ -209,7 +212,6 @@ function LoginInner() {
         {/*                       DESKTOP LAYOUT                           */}
         {/* ============================================================ */}
         <div className="hidden lg:grid lg:min-h-screen lg:grid-cols-[1.1fr_1fr] xl:grid-cols-[1.2fr_1fr]">
-          {/* Hero panel */}
           <section className="relative isolate flex flex-col justify-between overflow-hidden p-10 xl:p-14">
             <Image
               src="/growlab.jpeg"
@@ -267,7 +269,6 @@ function LoginInner() {
             </div>
           </section>
 
-          {/* Login panel */}
           <section className="relative flex flex-col items-center justify-center px-4 py-10">
             <div className="w-full max-w-md space-y-8">
               <div className="space-y-2 text-center">
@@ -290,25 +291,27 @@ function LoginInner() {
   )
 }
 
+type LoginFormProps = {
+  persona: Persona
+  setPersona: (p: Persona) => void
+  register: ReturnType<typeof useForm<LoginValues>>['register']
+  passwordError?: string
+  authError: string
+  isSubmitting: boolean
+  onSubmit: (e?: React.BaseSyntheticEvent) => void | Promise<void>
+  compact?: boolean
+}
+
 function LoginForm({
   persona,
   setPersona,
-  password,
-  setPassword,
-  error,
-  isLoading,
-  handleLogin,
+  register,
+  passwordError,
+  authError,
+  isSubmitting,
+  onSubmit,
   compact,
-}: {
-  persona: Persona
-  setPersona: (p: Persona) => void
-  password: string
-  setPassword: (p: string) => void
-  error: string
-  isLoading: boolean
-  handleLogin: (e: React.FormEvent) => void
-  compact?: boolean
-}) {
+}: LoginFormProps) {
   return (
     <>
       <CardHeader className={cn('space-y-1', compact && 'pt-5 pb-2')}>
@@ -321,7 +324,7 @@ function LoginForm({
             : 'Choose Admin to see the full operational view, or Scientist for the field workspace.'}
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={onSubmit} noValidate>
         <CardContent className={cn('space-y-5 pb-6', compact && 'space-y-4 px-4')}>
           <div className="space-y-2">
             <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -354,23 +357,26 @@ function LoginForm({
             <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              required
               autoComplete="current-password"
-              className={cn(compact && 'h-11 text-base')}
+              aria-invalid={passwordError ? 'true' : undefined}
+              className={cn(
+                compact && 'h-11 text-base',
+                passwordError && 'border-destructive focus-visible:ring-destructive/30'
+              )}
+              {...register('password')}
             />
+            {passwordError ? (
+              <p className="text-xs text-destructive" role="alert">
+                {passwordError}
+              </p>
+            ) : null}
           </div>
 
-          {error && (
+          {authError && (
             <div className="flex items-start gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>
-                {error === 'Invalid login credentials'
-                  ? 'Incorrect password. Please try again.'
-                  : error}
-              </span>
+              <span>{authError}</span>
             </div>
           )}
         </CardContent>
@@ -381,9 +387,9 @@ function LoginForm({
               'w-full font-semibold',
               compact && 'h-12 text-base shadow-md shadow-primary/20'
             )}
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? 'Signing in…' : 'Enter Demo'}
+            {isSubmitting ? 'Signing in…' : 'Enter Demo'}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             Demo data resets on request from the System Health page.

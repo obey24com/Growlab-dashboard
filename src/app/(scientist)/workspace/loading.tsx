@@ -1,5 +1,5 @@
-import { BrandedLoader } from "@/components/loaders/branded-loader"
+import { WorkspaceSkeleton } from "@/components/loaders/page-skeletons"
 
 export default function WorkspaceLoading() {
-  return <BrandedLoader subtitle="Preparing your workspace" />
+  return <WorkspaceSkeleton />
 }

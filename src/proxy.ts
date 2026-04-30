@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -39,21 +39,29 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // Fast path: read role from JWT app_metadata, populated by the
+    // `custom_access_token_hook` Supabase auth hook (see README §Auth).
+    // Falls back to a DB query for tokens issued before the hook was
+    // installed, so existing sessions keep working until they refresh.
+    let role = (user.app_metadata?.role as string | undefined) ?? null
 
-    // If the profile lookup explicitly fails, surface a friendly error rather
-    // than silently bouncing the user, which used to mask schema/grant issues.
-    if (profileError) {
-      const url = new URL('/', request.url)
-      url.searchParams.set('error', 'profile_lookup_failed')
-      return NextResponse.redirect(url)
+    if (!role) {
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        const url = new URL('/', request.url)
+        url.searchParams.set('error', 'profile_lookup_failed')
+        return NextResponse.redirect(url)
+      }
+
+      role = profile?.role ?? null
     }
 
-    if (path.startsWith('/admin') && profile?.role !== 'admin') {
+    if (path.startsWith('/admin') && role !== 'admin') {
       return NextResponse.redirect(new URL('/workspace', request.url))
     }
   }
