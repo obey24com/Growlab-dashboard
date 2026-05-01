@@ -38,15 +38,6 @@ function LoginInner() {
   const [authError, setAuthError] = useState('')
   const [isExiting, setIsExiting] = useState(false)
 
-  const form = useForm<LoginValues>({
-    resolver: zodResolver(loginSchema),
-    mode: 'onTouched',
-    defaultValues: { persona: 'admin', password: '' },
-  })
-
-  const persona = form.watch('persona')
-  const isSubmitting = form.formState.isSubmitting
-
   useEffect(() => {
     const reason = searchParams.get('error')
     if (reason === 'profile_lookup_failed') {
@@ -56,7 +47,7 @@ function LoginInner() {
     }
   }, [searchParams])
 
-  const onSubmit = form.handleSubmit(async ({ persona, password }) => {
+  const handleAuthenticate = async (persona: Persona, password: string) => {
     setAuthError('')
     const email =
       persona === 'admin' ? 'admin@growlab.demo' : 'scientist@growlab.demo'
@@ -87,16 +78,11 @@ function LoginInner() {
         router.refresh()
       }, 180)
     }
-  })
+  }
 
   const formProps = {
-    persona,
-    setPersona: (p: Persona) => form.setValue('persona', p),
-    register: form.register,
-    passwordError: form.formState.errors.password?.message,
+    onAuthenticate: handleAuthenticate,
     authError,
-    isSubmitting,
-    onSubmit,
   }
 
   return (
@@ -292,26 +278,28 @@ function LoginInner() {
 }
 
 type LoginFormProps = {
-  persona: Persona
-  setPersona: (p: Persona) => void
-  register: ReturnType<typeof useForm<LoginValues>>['register']
-  passwordError?: string
+  onAuthenticate: (persona: Persona, password: string) => Promise<void>
   authError: string
-  isSubmitting: boolean
-  onSubmit: (e?: React.BaseSyntheticEvent) => void | Promise<void>
   compact?: boolean
 }
 
-function LoginForm({
-  persona,
-  setPersona,
-  register,
-  passwordError,
-  authError,
-  isSubmitting,
-  onSubmit,
-  compact,
-}: LoginFormProps) {
+function LoginForm({ onAuthenticate, authError, compact }: LoginFormProps) {
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onTouched',
+    defaultValues: { persona: 'admin', password: '' },
+  })
+
+  const persona = form.watch('persona')
+  const isSubmitting = form.formState.isSubmitting
+  const passwordError = form.formState.errors.password?.message
+  const setPersona = (p: Persona) => form.setValue('persona', p)
+  const register = form.register
+
+  const onSubmit = form.handleSubmit(async ({ persona, password }) => {
+    await onAuthenticate(persona, password)
+  })
+
   return (
     <>
       <CardHeader className={cn('space-y-1', compact && 'pt-5 pb-2')}>
