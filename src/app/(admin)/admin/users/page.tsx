@@ -46,12 +46,12 @@ export default async function UsersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             Access
           </p>
-          <h1 className="font-serif text-3xl font-medium tracking-tight md:text-4xl">
+          <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl md:text-4xl">
             Users &amp; permissions
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -62,14 +62,14 @@ export default async function UsersPage() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-[0_1px_0_rgba(16,24,16,0.04)]">
-        <Table>
+        <Table className="min-w-[640px]">
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="whitespace-nowrap">Name</TableHead>
+              <TableHead className="whitespace-nowrap">Email</TableHead>
+              <TableHead className="whitespace-nowrap">Role</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

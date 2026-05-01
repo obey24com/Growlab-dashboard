@@ -41,21 +41,23 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
     <div className="flex flex-col gap-6 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold tracking-tight">{batch.batch_code}</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl break-all">
+              {batch.batch_code}
+            </h1>
             <Badge variant={batch.status === 'active' ? 'default' : 'secondary'} className={batch.status === 'active' ? 'bg-primary hover:bg-primary' : ''}>
               {batch.status}
             </Badge>
           </div>
-          <p className="text-muted-foreground flex items-center gap-2">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground sm:text-base">
             <span>{batch.variety?.name} ({batch.variety?.code})</span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Started {format(new Date(batch.started_at), 'MMM d, yyyy')}</span>
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4 md:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Stage</CardTitle>

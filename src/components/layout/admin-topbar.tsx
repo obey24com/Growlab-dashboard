@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from "react"
+import Image from "next/image"
 import { Bell, Settings, RotateCcw, LogOut, User, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,7 +60,28 @@ export function AdminTopbar() {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/60 bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-8">
+    <header
+      className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:gap-4 md:px-4 lg:px-8"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <SidebarTrigger className="md:hidden -ml-1" />
+
+      <div className="flex items-center gap-2 md:hidden">
+        <Image
+          src="/logo transparent.png"
+          alt="Growlab"
+          width={120}
+          height={45}
+          priority
+          sizes="120px"
+          className="h-7 w-auto"
+          style={{ width: "auto", height: "1.75rem" }}
+        />
+        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+          Admin
+        </span>
+      </div>
+
       <Breadcrumbs />
 
       <div className="ml-auto flex items-center gap-1.5">

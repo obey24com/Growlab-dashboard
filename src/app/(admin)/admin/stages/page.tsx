@@ -55,8 +55,8 @@ export default async function StagesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Stages & Process</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Stages & Process</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
           The 21-stage Growlab tissue culture flow, from Germination through Growing.
         </p>
       </div>
@@ -76,16 +76,16 @@ export default async function StagesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
-              <Table>
+            <div className="overflow-hidden rounded-md border">
+              <Table className="min-w-[680px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px]">Code</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead className="w-[120px]">Duration</TableHead>
-                    <TableHead className="w-[160px]">Expected Yield</TableHead>
-                    <TableHead className="w-[120px]">Jar Type</TableHead>
-                    <TableHead className="w-[100px] text-right">Jar Ratio</TableHead>
+                    <TableHead className="w-[80px] whitespace-nowrap">Code</TableHead>
+                    <TableHead className="whitespace-nowrap">Stage</TableHead>
+                    <TableHead className="w-[120px] whitespace-nowrap">Duration</TableHead>
+                    <TableHead className="w-[160px] whitespace-nowrap">Expected Yield</TableHead>
+                    <TableHead className="w-[120px] whitespace-nowrap">Jar Type</TableHead>
+                    <TableHead className="w-[100px] whitespace-nowrap text-right">Jar Ratio</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

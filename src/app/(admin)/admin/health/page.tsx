@@ -20,12 +20,14 @@ export default function SystemHealthPage() {
     <div className="flex flex-col gap-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">System Health</h1>
-          <p className="text-muted-foreground">Monitor platform performance and data usage.</p>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">System Health</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Monitor platform performance and data usage.
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Database Storage</CardTitle>

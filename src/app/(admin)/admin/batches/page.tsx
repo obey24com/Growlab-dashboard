@@ -55,12 +55,12 @@ export default async function BatchesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             Production
           </p>
-          <h1 className="font-serif text-3xl font-medium tracking-tight md:text-4xl">
+          <h1 className="font-serif text-2xl font-medium tracking-tight sm:text-3xl md:text-4xl">
             Batches
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -71,15 +71,15 @@ export default async function BatchesPage() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-[0_1px_0_rgba(16,24,16,0.04)]">
-        <Table>
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead>Batch Code</TableHead>
-              <TableHead>Variety</TableHead>
-              <TableHead>Current Stage</TableHead>
-              <TableHead>Jars</TableHead>
-              <TableHead>Started</TableHead>
-              <TableHead className="text-right">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Batch Code</TableHead>
+              <TableHead className="whitespace-nowrap">Variety</TableHead>
+              <TableHead className="whitespace-nowrap">Current Stage</TableHead>
+              <TableHead className="whitespace-nowrap">Jars</TableHead>
+              <TableHead className="whitespace-nowrap">Started</TableHead>
+              <TableHead className="whitespace-nowrap text-right">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
